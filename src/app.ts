@@ -1,25 +1,53 @@
-import * as express from 'express'
-import catsRouter from './cats/cats.route'
+import * as express from 'express';
+import { inherits } from 'util';
+import catsRouter from './cats/cats.route';
 
-const app = express()
+class Server {
+    app: express.Express;
+    port: number = 8000;
 
-//* logging middleware
-app.use((req, res, next) => {
-  console.log(req.rawHeaders[1])
-  next()
-})
-//* json middleware
-app.use(express.json())
+    constructor() {
+        this.app = express();
+    }
 
-//* Router
-app.use(catsRouter)
+    init() {
+        this.setMiddleware();
+        this.listen();
+    }
 
-//* 404 middleware
-app.use((req, res, next) => {
-  console.log('this is not found ')
-  res.send({ error: '404' })
-})
+    private setRouter() {
+        this.app.use(catsRouter);
+    }
 
-app.listen(8000, () => {
-  console.log('server is on...')
-})
+    private setMiddleware() {
+        //* logging middleware
+        this.app.use((req, res, next) => {
+            console.log(req.rawHeaders[1]);
+            next();
+        });
+        //* json middleware
+        this.app.use(express.json());
+
+        //* Router
+        this.setRouter();
+
+        //* 404 middleware
+        this.app.use((req, res, next) => {
+            console.log('this is not found ');
+            res.send({ error: '404' });
+        });
+    }
+
+    private listen() {
+        this.app.listen(this.port, () => {
+            console.log('server is on...');
+        });
+    }
+}
+
+function main() {
+    const server = new Server();
+    server.init();
+}
+
+main();
